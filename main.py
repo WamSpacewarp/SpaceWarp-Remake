@@ -11,8 +11,8 @@ import pyxel
 pyxel.init(128, 128, title="SpaceWarp")
 pyxel.load("assets.pyxres")
 
-tile_at: Callable = pyxel.tilemaps[5].pget
-tile_set: Callable = pyxel.tilemaps[5].pset
+tile_at: Callable
+tile_set: Callable
 
 Tile = tuple[int, int]
 
@@ -471,8 +471,8 @@ class App:
         self.start_frame: int = pyxel.frame_count
         self.end_frame: int
 
-        self.tile_at: Callable = pyxel.tilemaps[self.difficulty].pget
-        self.tile_set: Callable = pyxel.tilemaps[self.difficulty].pset
+        tile_at = pyxel.tilemaps[self.difficulty].pget
+        tile_set = pyxel.tilemaps[self.difficulty].pset
 
         self.nrooms: int = self.get_nrooms()
 
@@ -490,7 +490,7 @@ class App:
 
         for y in range(16):
             for x in range(self.nrooms * 16):
-                tile = self.tile_at(x, y)
+                tile = tile_at(x, y)
                 if tile in SPAWN_TILE:
                     self.spawn = x * 8, y * 8
                     tile = EMPTY_TILE
@@ -505,7 +505,7 @@ class App:
                 elif tile in TOP_DOORS:
                     if y == 16:
                         raise TileError("Top door cannot be at the bottom of the screen")
-                    if self.tile_at(x, y + 1) in BOTTOM_DOORS:
+                    if tile_at(x, y + 1) in BOTTOM_DOORS:
                         self.doors[x // 16][tile].add((x, y))
                     else:
                         raise TileError(f"Missing bottom door at {(x, y + 1)}")
@@ -513,7 +513,7 @@ class App:
                 elif tile in BOTTOM_DOORS:
                     if y == 0:
                         raise TileError("Bottom door cannot be at the top of the screen")
-                    if self.tile_at(x, y - 1) not in TOP_DOORS:
+                    if tile_at(x, y - 1) not in TOP_DOORS:
                         raise TileError(f"Missing top door at {(x, y - 1)}")
 
                 elif tile == END_SHIP_TOP_LEFT:
@@ -521,7 +521,7 @@ class App:
                         raise TileError("Cannot have 2 end ships in the same room")
                     ship_in_room = True
                     ship_tiles: set[Tile] = {(x + i, y + j) for i in range(2) for j in range(2)}
-                    if any(self.tile_at(*ship_tile) not in END_SHIP for ship_tile in ship_tiles):
+                    if any(tile_at(*ship_tile) not in END_SHIP for ship_tile in ship_tiles):
                         raise TileError(f"Incomplete end ship at {x, y}")
                     for ship_tile in ship_tiles:
                         ship_locations.add(ship_tile)
